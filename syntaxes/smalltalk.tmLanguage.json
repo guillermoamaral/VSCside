@@ -1,0 +1,70 @@
+{
+  "name": "Smalltalk",
+  "scopeName": "source.smalltalk",
+  "fileTypes": [
+    "st"
+  ],
+  "patterns": [
+    {
+      "name": "comment.line.double-quote.smalltalk",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": []
+    },
+    {
+      "name": "string.quoted.single.smalltalk",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.smalltalk"
+        }
+      ]
+    },
+    {
+      "match": "\\b(self|super|true|false|nil|thisContext)\\b",
+      "name": "constant.language.smalltalk"
+    },
+    {
+      "match": "\\b-?[0-9]+(\\.[0-9]+)?\\b",
+      "name": "constant.numeric.smalltalk"
+    },
+    {
+      "match": "\\#[a-zA-Z_][a-zA-Z0-9_]*",
+      "name": "constant.other.symbol.smalltalk"
+    },
+    {
+      "match": "\\b([A-Z][a-zA-Z0-9_]*)\\b",
+      "name": "entity.name.type.class.smalltalk"
+    },
+    {
+      "name": "meta.block.smalltalk",
+      "begin": "\\[",
+      "end": "\\]",
+      "patterns": [
+        {
+          "match": ":[a-zA-Z_][a-zA-Z0-9_]*",
+          "name": "variable.parameter.smalltalk"
+        }
+      ]
+    },
+    {
+      "match": "\\b[a-z_][a-zA-Z0-9_]*\\b",
+      "name": "variable.other.smalltalk"
+    },
+    {
+      "match": "[+\\-*/=><&|~,@%]+",
+      "name": "keyword.operator.smalltalk"
+    },
+    {
+      "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*:\\b",
+      "name": "entity.name.function.selector.keyword.smalltalk"
+    },
+    {
+      "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b",
+      "name": "entity.name.function.selector.unary.smalltalk"
+    }
+  ],
+  "uuid": "uuid-advanced-smalltalk"
+}

@@ -1,0 +1,82 @@
+{
+	"name": "webside-vscode",
+	"displayName": "Webside",
+	"description": "Explore and edit Smalltalk code using the Webside API",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"activationEvents": [
+		"onView:websideExplorer"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "webside",
+					"title": "Webside",
+					"icon": "media/webside.svg"
+				}
+			]
+		},
+		"views": {
+			"webside": [
+				{
+					"id": "websideExplorer",
+					"name": "Webside",
+					"icon": "media/webside.svg"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "webside.openMethod",
+				"title": "Open Smalltalk Method"
+			},
+			{
+				"command": "webside.configure",
+				"title": "Webside: Configure Connection"
+			},
+			{
+				"command": "webside.resetCredentials",
+				"title": "Webside: Reset Credentials"
+			}
+		],
+		"languages": [
+			{
+				"id": "smalltalk",
+				"aliases": [
+					"Smalltalk"
+				],
+				"extensions": [
+					".st"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "smalltalk",
+				"scopeName": "source.smalltalk",
+				"path": "./syntaxes/smalltalk.tmLanguage.json"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"package": "vsce package"
+	},
+	"devDependencies": {
+		"@types/node": "^18.0.0",
+		"typescript": "^4.9.5",
+		"vsce": "^2.15.0",
+		"vscode": "^1.1.37"
+	},
+	"dependencies": {
+		"axios": "^1.9.0",
+		"node-fetch": "^3.3.2"
+	}
+}

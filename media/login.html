@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Webside Configuration</title>
+		<style>
+			body {
+				background-color: var(--vscode-editor-background);
+				color: var(--vscode-editor-foreground);
+				font-family: var(--vscode-font-family);
+				padding: 1.5rem;
+			}
+
+			h2 {
+				margin-bottom: 1rem;
+			}
+
+			label {
+				display: block;
+				margin-top: 1rem;
+				margin-bottom: 0.25rem;
+			}
+
+			input {
+				background-color: var(--vscode-input-background);
+				color: var(--vscode-input-foreground);
+				border: 1px solid var(--vscode-input-border);
+				width: 100%;
+				padding: 6px;
+				box-sizing: border-box;
+			}
+
+			button {
+				margin-top: 1.5rem;
+				padding: 6px 12px;
+				background-color: var(--vscode-button-background);
+				color: var(--vscode-button-foreground);
+				border: none;
+				cursor: pointer;
+				font-weight: bold;
+			}
+
+			button:hover {
+				background-color: var(--vscode-button-hoverBackground);
+			}
+		</style>
+	</head>
+	<body>
+		<h2>Configure Webside Connection</h2>
+		<label for="backendURL">Backend URL</label>
+		<input
+			type="text"
+			id="backendURL"
+			placeholder="http://localhost:9000/bee"
+			value="{{backendURL}}"
+		/>
+
+		<label for="developer">Developer</label>
+		<input
+			type="text"
+			id="developer"
+			placeholder="your username"
+			value="{{developer}}"
+		/>
+
+		<button onclick="connect()">Connect</button>
+
+		<script>
+			const vscode = acquireVsCodeApi();
+
+			function connect() {
+				const backendURL = document.getElementById("backendURL").value;
+				const developer = document.getElementById("developer").value;
+
+				if (!backendURL || !developer) {
+					alert("Both fields are required.");
+					return;
+				}
+
+				vscode.postMessage({
+					command: "connect",
+					backendURL,
+					developer,
+				});
+			}
+		</script>
+	</body>
+</html>
