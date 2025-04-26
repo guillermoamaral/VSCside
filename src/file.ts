@@ -1,7 +1,12 @@
 import * as vscode from "vscode";
 import Backend from "./backend";
 
-interface WebsideFileData {
+interface WebsideClassFile {
+	content: Uint8Array;
+	className: string;
+}
+
+interface WebsideMethodFile {
 	content: Uint8Array;
 	className: string;
 	selector: string;
@@ -10,7 +15,7 @@ interface WebsideFileData {
 export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 	constructor(private backend: Backend) {}
 
-	private files = new Map<string, WebsideFileData>();
+	private files = new Map<string, WebsideMethodFile | WebsideClassFile>();
 
 	// Required event but not used for now
 	onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
@@ -56,11 +61,30 @@ export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 		file.content = content;
 
 		// Send to backend
-		this.uploadMethod(
-			file.className,
-			file.selector,
-			new TextDecoder().decode(content)
-		);
+		if ("selector" in file) {
+			this.uploadMethod(
+				file.className,
+				file.selector,
+				new TextDecoder().decode(content)
+			);
+		} else {
+			this.uploadClass(file.className, new TextDecoder().decode(content));
+		}
+	}
+
+	async uploadClass(className: string, definition: string) {
+		const response = await this.backend.post(`/changes`, {
+			type: "AddClass",
+			className,
+			definition,
+		});
+
+		if (!response.ok) {
+			vscode.window.showErrorMessage(
+				`Failed to save class: ${response.status}`
+			);
+			return;
+		}
 	}
 
 	async uploadMethod(
@@ -103,7 +127,15 @@ export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 		this.backend = newBackend;
 	}
 
-	registerFile(
+	registerClassFile(uri: vscode.Uri, className: string, definition: string) {
+		this.files.set(uri.path, {
+			content: new TextEncoder().encode(definition),
+			className,
+			definition,
+		} as WebsideClassFile);
+	}
+
+	registerMethodFile(
 		uri: vscode.Uri,
 		className: string,
 		selector: string,
@@ -113,6 +145,6 @@ export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 			content: new TextEncoder().encode(source),
 			className,
 			selector,
-		});
+		} as WebsideMethodFile);
 	}
 }

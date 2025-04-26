@@ -68,15 +68,20 @@ export class WebsideTreeProvider
 			const classes = await this.backend.packageClasses(element.label);
 			return classes
 				.sort((a, b) => a.name.localeCompare(b.name))
-				.map(
-					(cls) =>
-						new SmalltalkNode(
-							cls.name,
-							"class",
-							cls,
-							vscode.TreeItemCollapsibleState.Collapsed
-						)
-				);
+				.map((cls) => {
+					const item = new SmalltalkNode(
+						cls.name,
+						"class",
+						cls,
+						vscode.TreeItemCollapsibleState.Collapsed
+					);
+					item.command = {
+						title: "Open Class",
+						command: "webside.openClass",
+						arguments: [{ className: cls.name }],
+					};
+					return item;
+				});
 		} else if (
 			element instanceof SmalltalkNode &&
 			element.nodeType === "class"

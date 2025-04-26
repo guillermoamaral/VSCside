@@ -88,6 +88,10 @@ export default class Backend {
 		return await this.get("/classes?names=true");
 	}
 
+	async classNamed(className: string): Promise<StClass> {
+		return await this.get(`/classes/${encodeURIComponent(className)}`);
+	}
+
 	async methods(className: string): Promise<StMethod[]> {
 		return await this.get(
 			`/classes/${encodeURIComponent(className)}/methods`

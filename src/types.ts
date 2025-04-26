@@ -4,6 +4,7 @@ export interface StPackage {
 
 export interface StClass {
 	name: string;
+	definition: string;
 }
 
 export interface StMethod {
