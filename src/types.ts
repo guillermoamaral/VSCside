@@ -1,58 +1,82 @@
+//
+// Tipos usados por Backend
+//
+
 export interface StPackage {
 	name: string;
 }
 
 export interface StClass {
 	name: string;
-	definition: string;
+	superclass?: string;
+	package?: string;
+	definition?: string;
+	comment?: string;
+	subclasses: StClass[];
+}
+
+export interface StVariable {
+	name: string;
+	class: string;
 }
 
 export interface StMethod {
 	selector: string;
 	source: string;
+	ast?: any;
+	annotations?: any;
 }
 
-export interface StVariable {
-	name: string;
+export interface StChange {
 	type: string;
+	author: string;
+	[key: string]: any;
 }
 
-export interface StCategory {
+export interface StWorkspace {
+	id: string;
+	source: string;
+	name?: string;
+}
+
+export interface StDebugger {
+	id: string;
+	status: string;
+	frames: StFrame[];
+}
+
+export interface StFrame {
+	index: number;
+	selector: string;
+	className: string;
+	methodName: string;
+}
+
+export interface StBinding {
 	name: string;
+	value: any;
+}
+
+export interface StEvaluation {
+	id: string;
+	status: string;
+	expression: string;
+	result?: any;
 }
 
 export interface StObject {
 	id: string;
 	className: string;
-	label: string;
-}
-
-export interface StDebugger {
-	id: string;
-	frames: any[];
-}
-
-export interface StWorkspace {
-	id: string;
-	bindings: any[];
-}
-
-export interface StEvaluation {
-	id: string;
-	expression: string;
-}
-
-export interface StChange {
-	id: string;
-	description: string;
+	slots?: { [key: string]: any };
 }
 
 export interface StTestRun {
 	id: string;
 	status: string;
+	results?: any[];
 }
 
-export interface StProfiler {
+export interface StProfileResult {
 	id: string;
 	tree: any;
 	ranking: any;

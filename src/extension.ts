@@ -5,8 +5,9 @@ import {
 	resetCredentials,
 	showLoginWebview,
 } from "./login";
+import { showSearchPanel } from "./search";
 import { WebsideFileSystemProvider } from "./file";
-import Backend from "./backend";
+import { Backend } from "./backend";
 
 let backend: Backend;
 let treeProvider: WebsideTreeProvider | null = null;
@@ -51,6 +52,12 @@ export async function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		)
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("webside.openSearch", () => {
+			showSearchPanel(context, backend);
+		})
 	);
 }
 

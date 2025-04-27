@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+	</head>
+	<body>
+		<input
+			id="query"
+			type="text"
+			placeholder="Search..."
+			style="width: 100%"
+		/>
+		<ul id="results"></ul>
+
+		<script>
+			const vscode = acquireVsCodeApi();
+			const input = document.getElementById("query");
+			const results = document.getElementById("results");
+
+			input.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") {
+					vscode.postMessage({
+						command: "search",
+						query: input.value,
+					});
+				}
+			});
+
+			window.addEventListener("message", (event) => {
+				const message = event.data;
+				if (message.command === "results") {
+					results.innerHTML = "";
+					for (const result of message.results) {
+						const li = document.createElement("li");
+						li.textContent = `${result.type}: ${result.text}`;
+						li.onclick = () => {
+							vscode.postMessage({
+								command: "goto",
+								type: result.type,
+								name: result.text,
+							});
+						};
+						results.appendChild(li);
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

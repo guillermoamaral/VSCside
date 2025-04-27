@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import Backend from "./backend";
+import { Backend } from "./backend";
 
 interface WebsideClassFile {
 	content: Uint8Array;
@@ -56,7 +56,6 @@ export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 		if (!file) {
 			throw vscode.FileSystemError.FileNotFound();
 		}
-
 		// Update local content
 		file.content = content;
 
@@ -73,18 +72,11 @@ export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 	}
 
 	async uploadClass(className: string, definition: string) {
-		const response = await this.backend.post(`/changes`, {
+		await this.backend.post(`/changes`, {
 			type: "AddClass",
 			className,
 			definition,
 		});
-
-		if (!response.ok) {
-			vscode.window.showErrorMessage(
-				`Failed to save class: ${response.status}`
-			);
-			return;
-		}
 	}
 
 	async uploadMethod(
@@ -92,19 +84,12 @@ export class WebsideFileSystemProvider implements vscode.FileSystemProvider {
 		selector: string,
 		sourceCode: string
 	) {
-		const response = await this.backend.post(`/changes`, {
+		await this.backend.post(`/changes`, {
 			type: "AddMethod",
 			className,
 			selector,
 			sourceCode,
 		});
-
-		if (!response.ok) {
-			vscode.window.showErrorMessage(
-				`Failed to save method: ${response.status}`
-			);
-			return;
-		}
 	}
 
 	delete(): void {
