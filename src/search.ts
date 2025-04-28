@@ -1,11 +1,18 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { Backend } from "./backend";
+import { Backend, BackendError } from "./backend";
+import { WebsideTreeProvider } from "./tree";
+
+type SearchMode = "normal" | "disambiguation";
+
+let currentMode: SearchMode = "normal";
+let pendingSelector: string | null = null;
 
 export function showSearchPanel(
 	context: vscode.ExtensionContext,
-	backend: Backend
+	backend: Backend,
+	treeProvider: WebsideTreeProvider
 ) {
 	const panel = vscode.window.createWebviewPanel(
 		"websideSearch",
@@ -18,11 +25,46 @@ export function showSearchPanel(
 
 	panel.webview.onDidReceiveMessage(async (msg) => {
 		if (msg.command === "search") {
-			const results = await backend.search(msg.query);
+			currentMode = "normal";
+			let results;
+			try {
+				results = await backend.search(msg.query);
+			} catch (error) {
+				vscode.window.showWarningMessage((error as Error).toString());
+			}
 			panel.webview.postMessage({ command: "results", results });
 		} else if (msg.command === "goto") {
-			const { type, name } = msg;
-			// Aquí tendrías que buscar en el árbol, seleccionar, expandir, etc.
+			if (currentMode === "normal") {
+				if (msg.type === "package") {
+					await treeProvider.revealPackage(msg.name);
+				} else if (msg.type === "class") {
+					await treeProvider.revealClass(msg.name);
+				} else if (msg.type === "selector") {
+					currentMode = "disambiguation";
+					pendingSelector = msg.name;
+					const implementors = await backend.implementors(msg.name);
+					const disambiguationResults = implementors.map(
+						(impl: any) => ({
+							text: `${impl.className}>>${impl.selector}`,
+							className: impl.className,
+							selector: impl.selector,
+						})
+					);
+					panel.webview.postMessage({
+						command: "disambiguate",
+						results: disambiguationResults,
+					});
+				}
+			} else if (currentMode === "disambiguation") {
+				if (msg.className && msg.selector) {
+					await treeProvider.revealMethod(
+						msg.className,
+						msg.selector
+					);
+					currentMode = "normal";
+					pendingSelector = null;
+				}
+			}
 		}
 	});
 }

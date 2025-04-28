@@ -1,7 +1,3 @@
-//
-// Tipos usados por Backend
-//
-
 export interface StPackage {
 	name: string;
 }
@@ -21,10 +17,12 @@ export interface StVariable {
 }
 
 export interface StMethod {
+	methodClass: string;
 	selector: string;
 	source: string;
 	ast?: any;
 	annotations?: any;
+	package: string;
 }
 
 export interface StChange {

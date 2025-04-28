@@ -56,7 +56,9 @@ export class Backend {
 
 	async get<T = any>(uri: string, description?: string): Promise<T> {
 		try {
+			console.log(uri);
 			const response = await axios.get(this.url + uri);
+			console.log(response.data);
 			return response.data;
 		} catch (error) {
 			this.handleError("Cannot get " + (description || uri), uri, error);
@@ -1152,7 +1154,7 @@ export class Backend {
 		return await this.get("/workspaces");
 	}
 
-	// 
+	//
 
 	async testRuns(): Promise<StTestRun[]> {
 		return await this.get("/test-runs");

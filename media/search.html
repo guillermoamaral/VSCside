@@ -2,46 +2,176 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
+		<style>
+			body {
+				color: var(--vscode-editor-foreground);
+				background-color: var(--vscode-editor-background);
+				font-family: var(--vscode-font-family);
+				font-size: var(--vscode-font-size);
+			}
+
+			input {
+				background-color: var(--vscode-input-background);
+				color: var(--vscode-input-foreground);
+				border: 1px solid var(--vscode-input-border);
+				padding: 5px;
+				width: 80%;
+				margin-bottom: 10px;
+			}
+
+			button {
+				padding: 5px 10px;
+				margin-left: 10px;
+			}
+
+			h2 {
+				margin-top: 20px;
+				font-size: 1.2em;
+				color: var(--vscode-editor-foreground);
+				border-bottom: 1px solid var(--vscode-editorGroup-border);
+			}
+
+			a {
+				color: var(--vscode-textLink-foreground);
+				text-decoration: none;
+				display: block;
+				margin: 2px 0;
+			}
+
+			a:hover {
+				color: var(--vscode-textLink-activeForeground);
+				text-decoration: underline;
+			}
+
+			#loading {
+				display: flex;
+				align-items: center;
+				margin-top: 10px;
+				margin-bottom: 10px;
+			}
+
+			.spinner {
+				border: 3px solid var(--vscode-editorGroup-border);
+				border-top: 3px solid var(--vscode-editor-foreground);
+				border-radius: 50%;
+				width: 16px;
+				height: 16px;
+				animation: spin 1s linear infinite;
+				margin-right: 10px;
+			}
+
+			@keyframes spin {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+		</style>
 	</head>
 	<body>
-		<input
-			id="query"
-			type="text"
-			placeholder="Search..."
-			style="width: 100%"
-		/>
-		<ul id="results"></ul>
+		<div>
+			<input id="query" type="text" placeholder="Search..." />
+			<button id="searchBtn">Search</button>
+		</div>
+
+		<div id="loading" style="display: none">
+			<div class="spinner"></div>
+			<span>Searching...</span>
+		</div>
+
+		<div id="results"></div>
 
 		<script>
 			const vscode = acquireVsCodeApi();
 			const input = document.getElementById("query");
-			const results = document.getElementById("results");
+			const searchBtn = document.getElementById("searchBtn");
+			const resultsDiv = document.getElementById("results");
+			const loadingDiv = document.getElementById("loading");
+
+			function sendSearch() {
+				const query = input.value.trim();
+				if (query) {
+					loadingDiv.style.display = "flex";
+					resultsDiv.innerHTML = "";
+					vscode.postMessage({ command: "search", query });
+				}
+			}
 
 			input.addEventListener("keydown", (e) => {
 				if (e.key === "Enter") {
-					vscode.postMessage({
-						command: "search",
-						query: input.value,
-					});
+					sendSearch();
 				}
+			});
+			searchBtn.addEventListener("click", () => {
+				sendSearch();
 			});
 
 			window.addEventListener("message", (event) => {
 				const message = event.data;
+
 				if (message.command === "results") {
-					results.innerHTML = "";
-					for (const result of message.results) {
-						const li = document.createElement("li");
-						li.textContent = `${result.type}: ${result.text}`;
-						li.onclick = () => {
+					loadingDiv.style.display = "none";
+					resultsDiv.innerHTML = "";
+
+					if (!message.results || message.results.length === 0) {
+						resultsDiv.innerHTML = "<p>No results found.</p>";
+						return;
+					}
+
+					const grouped = {
+						package: [],
+						class: [],
+						selector: [],
+						pool: [],
+					};
+
+					message.results.forEach((r) => {
+						grouped[r.type]?.push(r);
+					});
+
+					for (const [group, items] of Object.entries(grouped)) {
+						if (items.length > 0) {
+							const title = document.createElement("h2");
+							title.textContent =
+								group.charAt(0).toUpperCase() +
+								group.slice(1) +
+								` (${items.length})`;
+							resultsDiv.appendChild(title);
+
+							items.forEach((item) => {
+								const link = document.createElement("a");
+								link.href = "#";
+								link.textContent = item.text;
+								link.onclick = () => {
+									vscode.postMessage({
+										command: "goto",
+										type: item.type,
+										name: item.text,
+									});
+								};
+								resultsDiv.appendChild(link);
+							});
+						}
+					}
+				} else if (message.command === "disambiguate") {
+					loadingDiv.style.display = "none";
+					resultsDiv.innerHTML = "<h2>Implementors</h2>";
+
+					message.results.forEach((item) => {
+						const link = document.createElement("a");
+						link.href = "#";
+						link.textContent = `${item.className}>>${item.selector}`;
+						link.onclick = () => {
 							vscode.postMessage({
 								command: "goto",
-								type: result.type,
-								name: result.text,
+								className: item.className,
+								selector: item.selector,
 							});
 						};
-						results.appendChild(li);
-					}
+						resultsDiv.appendChild(link);
+					});
 				}
 			});
 		</script>

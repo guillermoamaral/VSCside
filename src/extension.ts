@@ -56,7 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("webside.openSearch", () => {
-			showSearchPanel(context, backend);
+			showSearchPanel(context, backend, treeProvider!);
 		})
 	);
 }
