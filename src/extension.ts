@@ -35,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				const { backendURL, developer } = await getStoredCredentials(
 					context
 				);
-				await reconfigureWebside(context, backendURL, developer);
+				await reconfigureWebside(backendURL, developer);
 			}
 		})
 	);
@@ -49,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				if (changed) {
 					const { backendURL, developer } =
 						await getStoredCredentials(context);
-					await reconfigureWebside(context, backendURL, developer);
+					await reconfigureWebside(backendURL, developer);
 				}
 			}
 		)
@@ -86,15 +86,12 @@ async function setupWebside(
 	context.subscriptions.push(
 		vscode.commands.registerCommand("webside.openClass", async (item) => {
 			const cls = await backend.classNamed(item.className);
-
 			const uri = vscode.Uri.parse(`webside:/${item.className}.st`);
-
 			fileProvider?.registerClassFile(
 				uri,
 				item.className,
 				cls.definition || "Definition not found"
 			);
-
 			const doc = await vscode.workspace.openTextDocument(uri);
 			await vscode.window.showTextDocument(doc);
 		})
@@ -106,20 +103,17 @@ async function setupWebside(
 			// vscode.window.showErrorMessage(
 			// 	`Failed to load method: ${response.status}`
 			// );
-
 			const uri = vscode.Uri.parse(
 				`webside:/${item.className}/${encodeURIComponent(
 					item.selector
 				)}.st`
 			);
-
 			fileProvider?.registerMethodFile(
 				uri,
 				item.className,
 				item.selector,
 				method.source || "Source not found"
 			);
-
 			const doc = await vscode.workspace.openTextDocument(uri);
 			await vscode.window.showTextDocument(doc);
 		})
@@ -133,13 +127,8 @@ async function setupWebside(
 	);
 }
 
-async function reconfigureWebside(
-	context: vscode.ExtensionContext,
-	newBackendURL: string,
-	developer: string
-) {
+async function reconfigureWebside(newBackendURL: string, developer: string) {
 	backend = new Backend(newBackendURL, developer);
-
 	if (treeProvider) {
 		treeProvider.setBackend(backend);
 		treeProvider.refresh();
