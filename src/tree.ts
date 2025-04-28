@@ -74,7 +74,6 @@ export class WebsideTreeProvider
 	}
 
 	async revealItem(item: vscode.TreeItem) {
-		console.log("reveal", item.label);
 		if (this._view) {
 			try {
 				await this._view.reveal(item, {
@@ -172,6 +171,40 @@ export class WebsideTreeProvider
 		return children;
 	}
 
+	getParent(
+		element: vscode.TreeItem
+	): vscode.ProviderResult<vscode.TreeItem> {
+		if (element instanceof CodeItem) {
+			if (element.type === "package") {
+				return this.rootItems.find(
+					(item) => item instanceof PackagesItem
+				);
+			}
+			if (element.type === "class") {
+				const allPackages = this.childrenCache.get(
+					this.rootItems.find((item) => item instanceof PackagesItem)
+				);
+				return allPackages?.find(
+					(pkg) => pkg.label === element.data.package
+				);
+			}
+			if (element.type === "method") {
+				const allPackages = this.childrenCache.get(
+					this.rootItems.find((item) => item instanceof PackagesItem)
+				);
+				if (!allPackages) return undefined;
+				for (const pkg of allPackages) {
+					const classes = this.childrenCache.get(pkg);
+					const cls = classes?.find(
+						(c) => c.label === element.data.methodClass
+					);
+					if (cls) return cls;
+				}
+			}
+		}
+		return undefined;
+	}
+
 	async revealPackage(packageName: string) {
 		await this.revealPath(["Packages", packageName]);
 	}
@@ -206,6 +239,7 @@ export class WebsideTreeProvider
 
 		for (const label of path) {
 			const children: vscode.TreeItem[] = await this.getChildren(parent);
+			console.log(label, children);
 			const found = children.find(
 				(c: vscode.TreeItem) => c.label === label
 			);

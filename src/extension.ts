@@ -8,6 +8,7 @@ import {
 import { showSearchPanel } from "./search";
 import { WebsideFileSystemProvider } from "./file";
 import { Backend } from "./backend";
+import { VscsDocumentLinkProvider } from "./link";
 
 let backend: Backend;
 let treeProvider: WebsideTreeProvider | null = null;
@@ -76,9 +77,11 @@ async function setupWebside(
 	);
 
 	treeProvider = new WebsideTreeProvider(backend);
-	context.subscriptions.push(
-		vscode.window.registerTreeDataProvider("websideExplorer", treeProvider)
-	);
+	const treeView = vscode.window.createTreeView("websideExplorer", {
+		treeDataProvider: treeProvider,
+	});
+	treeProvider.registerView(treeView);
+	context.subscriptions.push(treeView);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("webside.openClass", async (item) => {
@@ -120,6 +123,13 @@ async function setupWebside(
 			const doc = await vscode.workspace.openTextDocument(uri);
 			await vscode.window.showTextDocument(doc);
 		})
+	);
+
+	context.subscriptions.push(
+		vscode.languages.registerDocumentLinkProvider(
+			{ language: "smalltalk" },
+			new VscsDocumentLinkProvider(backend)
+		)
 	);
 }
 
